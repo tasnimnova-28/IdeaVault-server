@@ -58,6 +58,114 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+// ADD a comment
+router.post("/:id/comments", async (req, res) => {
+  try {
+    const { userId, userName, text } = req.body;
+
+    if (!userId || !userName || !text?.trim()) {
+      return res.status(400).json({
+        message: "User information and comment text are required",
+      });
+    }
+
+    const idea = await Idea.findById(req.params.id);
+
+    if (!idea) {
+      return res.status(404).json({ message: "Idea not found" });
+    }
+
+    idea.comments.push({
+      userId,
+      userName,
+      text: text.trim(),
+    });
+
+    await idea.save();
+
+    res.status(201).json(idea);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to add comment" });
+  }
+});
+
+// EDIT a comment
+router.put("/:id/comments/:commentId", async (req, res) => {
+  try {
+    const { userId, text } = req.body;
+
+    if (!userId || !text?.trim()) {
+      return res.status(400).json({
+        message: "User ID and comment text are required",
+      });
+    }
+
+    const idea = await Idea.findById(req.params.id);
+
+    if (!idea) {
+      return res.status(404).json({ message: "Idea not found" });
+    }
+
+    const comment = idea.comments.id(req.params.commentId);
+
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    if (comment.userId !== userId) {
+      return res.status(403).json({
+        message: "You can only edit your own comments",
+      });
+    }
+
+    comment.text = text.trim();
+
+    await idea.save();
+
+    res.status(200).json(idea);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update comment" });
+  }
+});
+
+// DELETE a comment
+router.delete("/:id/comments/:commentId", async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const idea = await Idea.findById(req.params.id);
+
+    if (!idea) {
+      return res.status(404).json({ message: "Idea not found" });
+    }
+
+    const comment = idea.comments.id(req.params.commentId);
+
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    if (comment.userId !== userId) {
+      return res.status(403).json({
+        message: "You can only delete your own comments",
+      });
+    }
+
+    comment.deleteOne();
+
+    await idea.save();
+
+    res.status(200).json(idea);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to delete comment" });
+  }
+});
+
+
 // DELETE idea
 router.delete("/:id", async (req, res) => {
   try {
