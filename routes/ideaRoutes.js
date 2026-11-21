@@ -58,6 +58,50 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+// LIKE / UNLIKE an idea
+router.post("/:id/like", async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        message: "User ID is required",
+      });
+    }
+
+    const idea = await Idea.findById(req.params.id);
+
+    if (!idea) {
+      return res.status(404).json({
+        message: "Idea not found",
+      });
+    }
+
+    // Check whether this user already liked the idea
+    const alreadyLiked = idea.likes.includes(userId);
+
+    if (alreadyLiked) {
+      // Remove the like
+      idea.likes = idea.likes.filter((id) => id !== userId);
+    } else {
+      // Add the like
+      idea.likes.push(userId);
+    }
+
+    await idea.save();
+
+    res.status(200).json({
+      message: alreadyLiked ? "Like removed" : "Idea liked",
+      idea,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to update like",
+    });
+  }
+});
+
+
 // ADD a comment
 router.post("/:id/comments", async (req, res) => {
   try {
