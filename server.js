@@ -4,10 +4,13 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
 
+const ideaRoutes = require("./routes/ideaRoutes");
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/api/ideas", ideaRoutes);
 
 // Test route
 app.get("/", (req, res) => {
