@@ -2,6 +2,35 @@ const express = require("express");
 const router = express.Router();
 const Idea = require("../models/Idea");
 
+// GET 6 trending ideas
+router.get("/trending", async (req, res) => {
+  try {
+    const trendingIdeas = await Idea.aggregate([
+      {
+        $addFields: {
+          likesCount: { $size: { $ifNull: ["$likes", []] } },
+        },
+      },
+      {
+        $sort: {
+          likesCount: -1,
+          createdAt: -1,
+        },
+      },
+      {
+        $limit: 6,
+      },
+    ]);
+
+    res.status(200).json(trendingIdeas);
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to fetch trending ideas",
+    });
+  }
+});
+
+
 // GET all ideas
 router.get("/", async (req, res) => {
   try {
