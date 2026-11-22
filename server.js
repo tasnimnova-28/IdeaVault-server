@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 
 const ideaRoutes = require("./routes/ideaRoutes");
+const admin = require("./firebaseAdmin");
 
 const app = express();
 
@@ -15,6 +16,14 @@ app.use("/api/ideas", ideaRoutes);
 // Test route
 app.get("/", (req, res) => {
   res.send("IdeaVault Server is Running!");
+});
+
+// Firebase Admin test route
+app.get("/test-firebase", (req, res) => {
+  res.json({
+    message: "Firebase Admin is initialized successfully!",
+    projectId: admin.options.projectId,
+  });
 });
 
 // Connect MongoDB
